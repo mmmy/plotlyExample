@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+    	<script src='alt.min.js'></script>
+	<script src="react.js"></script>
+    <script src="react-dom.js"></script>
+    <script src="browser.min.js"></script>
+    <script type="text/javascript" src='JSXTransformer.js'></script>
+    	<script type="text/javascript" src='plotly.min.js'></script>
+</head>
+<body>
+	<!-- <div id="tester" style="width:600px;height:250px;"></div> -->
+
+	  <!-- <div id="myDiv" style="width: 480px; height: 400px;"><</div> -->
+	  <!-- <div id="my-graph">nihao</div> -->
+	  <div id="content">
+	  	
+
+	  </div>
+	<script type="text/javascript">
+		var alt = new Alt();
+		
+		
+		var Actions = alt.generateActions('addPoint');
+		var chartStore = alt.createStore({
+			displayName:'chartStore',
+			bindListeners: {
+				handleAddPoint: Actions.addPoint
+			},
+			state: [{
+					x:[1,2,3,4,5,6],
+					y:[-0.5,-0.2,0.2,0.3,0.8,0.2],
+					type:'scatter',
+					visible: true,
+				},{
+					x:[1,2,3,4,5,6],
+					y:[-0.4,-0.1,0.3,0.4,0.7,0.3],
+					type:'scatter',
+					visible: true,
+				}],
+			publicMethods:{},
+			handleAddPoint: function(){
+				var len = this.state[0].x.length;
+				var x = this.state[0].x;
+				var y = this.state[0].y;
+				x.push(len);
+				//y.push(Math.pow(2,len));
+				y.push(len * len);
+				this.setState([{
+					x: x,
+					y: y
+				}]);
+				console.log(this.state[0].x);
+				console.log(this.state[0].y);
+			},
+		});
+
+		//Actions.addPoint();
+		//debugger;
+		var layout = { 
+			title: '总览',
+			margin: { t: 100 },
+			width: 300,
+			showlegend: true,
+			dragmode: 'zoom',
+			hovermode: 'x',
+			xaxis: {	type:'date',
+						tickmode:'auto',
+						nticks:0,
+						tick0: 3,
+						tickvals:['a','b','c'],
+						ticktext:['a','b','c'],
+						
+						ticklen: 10,
+						tickwidth:5,
+						showticklabels: true,
+						tickangle: -45,
+						ticksuffix:'nihao',
+						showticksuffix: 'first',
+
+						showline: true,
+						linecolor: '#999',
+						linewidth: 3,
+
+						showgrid: true,
+
+						zeroline: true,
+						zerolinecolor:'#f00',
+
+						side:'bottom',
+
+						domain: [0,1],
+						position:0
+
+					},
+			yaxis: {
+				side: 'right',
+				showline:true,
+				linecolor: '#eee',
+				 position: 1,
+				 tickfont: {color:'#aaa'},
+
+				 zerolinecolor:'#f00',
+
+
+				},
+			legend: {
+				bgcolor:'#ddf',
+
+			},
+			annotations: {
+				textangle: 45,
+				text: 'annotations',
+
+			},
+			shapes: {
+				type:'line',
+				x0: 99,
+				opacity: 0.7
+			},
+			radialaxis:{
+				showline: true,
+				visible: true,
+				ticklen: 3,
+				showticklabels: true,
+
+			},
+			scene:{
+				
+
+			},
+			angularaxis:{
+				tickcolor: '#400',
+
+			},
+		};
+	</script>
+
+	<script type='text/jsx'>
+		
+
+		var Chart = React.createClass({
+
+			getInitialState: function(){
+				var traceStoreState = chartStore.getState();
+				return {cashTrace:traceStoreState};
+			},
+			
+			componentWillUnmount: function(){
+				chartStore.unListen(this.onUpdateTrace);
+			},
+			plotChart: function(traces,layout){
+				console.log(layout);
+				var testerDiv = document.getElementsByClassName('tester')[0];
+				//var trace = this.state.cashTrace;
+				Plotly.newPlot( testerDiv, traces, layout);
+				testerDiv.on('plotly_hover', function(data){
+   				 // do something using the event data
+   				 	console.log('hover');
+   				 	console.log(data);
+				});
+				testerDiv.on('plotly_unhover', function(data){
+   				 // do something using the event data
+   				 	console.log('unhover');
+   				 	console.log(data);
+				});
+				testerDiv.on('plotly_click', function(data){
+   				 // do something using the event data
+   				 	console.log('click');
+   				 	console.log(data);
+				});
+
+			},
+			onUpdateTrace: function(state){
+				console.log('onUpdateTrace');
+				this.plotChart(state,layout);	
+			},
+			componentDidMount :function(){		
+				chartStore.listen(this.onUpdateTrace);
+				console.log('componentDidMount ');
+				var traces = this.state.cashTrace;
+				this.plotChart(traces,layout);
+			},
+			render: function() {
+			    return (
+			      <div>
+				      <div>Chart</div>
+				      <div className="tester"></div>
+					  <div className="myDiv"></div>
+					  <div className="my-graph"></div>
+					</div>
+			    );
+			}
+		});
+
+		var CommentBox = React.createClass({
+			componentWillUpdate: function(nextProps, nextState){
+					console.log('componentWillUpdate');
+			},
+			componentDidUpdate:function(prevProps, prevState){
+				
+			},
+
+			getInitialState: function(){
+				var stroreLineObjState = chartStore.getState();
+				//console.log(stroreLineObjState);
+				return {index:0,show:true,count:0,lineObj:stroreLineObjState};
+			},
+			
+			componentDidMount: function(){
+				//chartStore.listen(this.onChange);
+			},
+			componentWillUnmount: function(){
+			    //chartStore.unlisten(this.onChange);
+			},
+			onChange: function(state){
+				console.log(state);
+				this.setState({lineObj:state});
+			},
+			handleClick: function(){
+				var index = this.state.index;
+				var show = !this.state.show;
+				this.setState({index:index, show:show});
+				console.log('handleClick');
+				console.log(Actions);
+			},
+			interval: null,
+			handleClickAdd: function(){
+				//var count = this.state.count + 1;
+				//this.setState({count: count});
+				this.interval = setInterval(function(){ Actions.addPoint(); },10);								
+			},
+			handleCancel: function(){
+				clearInterval(this.interval);
+			},
+		  render: function() {
+		    return (
+		      <div>
+			      <div onClick={this.handleClick}>click</div>
+			      <div onClick={this.handleClickAdd}>Add</div>
+			      <div onClick={this.handleCancel}>Cancel</div>
+			      {this.state.show ? <Chart lineObj={this.state.lineObj}/>:''}
+				</div>
+		    );
+		  }
+		});
+
+		ReactDOM.render(
+		  <CommentBox />,
+		  document.getElementById('content')
+		);
+	</script>
+	<script type="text/javascript">
+
+		// TESTER = document.getElementsByClassName('tester')[0];
+		// Plotly.plot( TESTER, [{
+		// x: [1, 2, 3, 4, 5],
+		// y: [1, 2, 4, 8, 16] }], {
+		// margin: { t: 0 } } );
+
+		// var data = [{
+		//   x: ['giraffes', 'orangutans', 'monkeys'],
+		//   y: [20, 14, 23],
+		//   type: 'bar'
+		// }];
+
+		// Plotly.newPlot(document.getElementsByClassName('myDiv')[0], data);
+
+
+		// Plotly.d3.csv('https://raw.githubusercontent.com/plotly/datasets/master/gapminderDataFiveYear.csv', function(err, rows){
+  //     var YEAR = 2007;
+  //     var continents = ['Asia', 'Europe', 'Africa', 'Oceania', 'Americas'];
+  //     var POP_TO_PX_SIZE = 2e5;
+  //     function unpack(rows, key) {
+  //         return rows.map(function(row) { return row[key]; });
+  //     }
+
+  //     var data = continents.map(function(continent) {
+  //         var rowsFiltered = rows.filter(function(row) {
+  //             return (row.continent === continent) && (+row.year === YEAR);
+  //         });
+  //         return {
+  //             mode: 'markers',
+  //             name: continent,
+  //             x: unpack(rowsFiltered, 'lifeExp'),
+  //             y: unpack(rowsFiltered, 'gdpPercap'),
+  //             text: unpack(rowsFiltered, 'country'),
+  //             marker: {
+  //                 sizemode: 'area',
+  //                 size: unpack(rowsFiltered, 'pop'),
+  //                 sizeref: POP_TO_PX_SIZE
+  //             }
+  //         };
+  //     });
+  //     var layout = {
+  //         xaxis: {title: 'Life Expectancy'},
+  //         yaxis: {title: 'GDP per Capita', type: 'log'},
+  //         margin: {t: 20},
+  //         hovermode: 'closest'
+  //     };
+  //     Plotly.plot(document.getElementsByClassName('my-graph')[0], data, layout, {showLink: false});
+  // });
+</script>
+</body>
+</html>
