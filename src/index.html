@@ -9,6 +9,8 @@
     <script src="browser.min.js"></script>
     <script type="text/javascript" src='JSXTransformer.js'></script>
     	<script type="text/javascript" src='plotly.min.js'></script>
+    	<script src="highcharts.stock.js"></script>
+
 </head>
 <body>
 	<!-- <div id="tester" style="width:600px;height:250px;"></div> -->
@@ -103,7 +105,7 @@
 				 tickfont: {color:'#aaa'},
 
 				 zerolinecolor:'#f00',
-
+				 overlaying: 'yaxis2',
 
 				},
 			legend: {
@@ -194,7 +196,64 @@
 			    );
 			}
 		});
-
+		var ReactHighchart = React.createClass({
+			componentDidMount:function(){
+				var div = document.getElementsByClassName('Highcharts__')[0];
+				var chart1 = new Highcharts.StockChart({
+			         chart: {
+			            renderTo: div,
+			            height: 600,
+			         },
+			         title:{
+			         	text:'图标'
+			         },
+			         xAxis:[{
+			         	offset: 00
+			         },{
+			         	offset: 00
+			         }],
+			         yAxis:[{
+			         	height: '25%'
+			         },{	
+			         	top: "33%",
+			         	height: '25%',		         	
+			         	offset: 0,
+			         },{
+			         	top: '66%',
+			         	height: '25%',
+			         }],
+			         rangeSelector: {
+			            selected: 1
+			         },
+			         series: [{
+			            name: '策略曲线',
+			            type: 'line',
+			            data: [[1,1000000], [2,1100000], [3,970000], [4,930000], [5,980000], [6,1050000],],
+			            yAxis: 0
+			        },{
+			            name: '策略曲线2',
+			            type: 'column',
+			            data: [{color:'#ff0',x:1,y:1200000},{color:'#ff0',x:2,y:1400000},{color:'#ff0',x:3,y:1200000},{color:'#ff0',x:4,y:1300000}],
+			            yAxis: 0
+			        },{
+			            name: '原始曲线',
+			            type: 'line',
+			            data: [[1,950000], [2,980000], [3,1300000], [4,990000], [5,980000], [6,1050000],],
+			            yAxis: 0
+			        }, {
+			            name: '盈亏浮动',
+			            type: 'column',
+			            data: [[1,0.5], [2,-0.4], [3,0.6],[4,0.3],[5,0.6],[6,0.8],],
+			           // xAxis: 1,
+			           
+			            yAxis: 1,
+			        }]
+			  });
+			},
+			render:function(){
+				return (<div className='Highcharts__'></div>);
+			},
+		});
 		var CommentBox = React.createClass({
 			componentWillUpdate: function(nextProps, nextState){
 					console.log('componentWillUpdate');
@@ -242,6 +301,7 @@
 			      <div onClick={this.handleClickAdd}>Add</div>
 			      <div onClick={this.handleCancel}>Cancel</div>
 			      {this.state.show ? <Chart lineObj={this.state.lineObj}/>:''}
+			      <ReactHighchart />
 				</div>
 		    );
 		  }
